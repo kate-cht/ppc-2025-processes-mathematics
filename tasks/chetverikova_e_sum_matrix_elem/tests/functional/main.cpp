@@ -48,7 +48,7 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
 
   bool CheckTestOutputData(OutType &output_data) final {
     TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
-    if (params == "test1" || params == "test5"|| params == "test7") {
+    if (params == "test1" || params == "test5" || params == "test7") {
       return std::abs(output_data - expected_data_) < 1e-12;
     }
     if (params == "test6") {
@@ -71,9 +71,9 @@ TEST_P(ChetverikovaERunFuncTestsProcesses, SummOfMatrixElements) {
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 7 > kTestParam = {std::string("test1"), std::string("test2"), 
-  std::string("test3"), std::string("test4"), std::string("test5"), std::string("test6"),
-  std::string("test7")};
+const std::array<TestType, 7> kTestParam = {std::string("test1"), std::string("test2"), std::string("test3"),
+                                            std::string("test4"), std::string("test5"), std::string("test6"),
+                                            std::string("test7")};
 
 const auto kTestTasksList = std::tuple_cat(ppc::util::AddFuncTask<ChetverikovaESumMatrixElemMPI, InType>(
                                                kTestParam, PPC_SETTINGS_chetverikova_e_sum_matrix_elem),
