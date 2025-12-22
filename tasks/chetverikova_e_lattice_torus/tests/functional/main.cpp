@@ -53,9 +53,6 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
     std::vector<int> path(std::get<1>(output_data));
     int end = std::get<1>(input_data_);
     // int start = std::get<0>(input_data_);
-
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     auto test_info = ::testing::UnitTest::GetInstance()->current_test_info();
     std::string test_name = test_info->name();
     bool is_seq_test = test_name.find("seq") != std::string::npos;
@@ -63,7 +60,8 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
     if (is_seq_test) {
       return true;
     }
-
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     if (rank == end) {
       if (out_data.size() != in_data.size()) {
         return false;
