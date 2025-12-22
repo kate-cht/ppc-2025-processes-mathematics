@@ -20,34 +20,33 @@ ChetverikovaELatticeTorusMPI::ChetverikovaELatticeTorusMPI(const InType &in) {
 
 bool ChetverikovaELatticeTorusMPI::ValidationImpl() {
   MPI_Comm_size(MPI_COMM_WORLD, &world_size_);
-  return (std::get<0>(GetInput()) >= 0) && (std::get<0>(GetInput()) < world_size_) && 
-         (std::get<1>(GetInput()) >= 0) && (std::get<1>(GetInput()) < world_size_) && 
-        !(std::get<2>(GetInput())).empty();
+  return (std::get<0>(GetInput()) >= 0) && (std::get<0>(GetInput()) < world_size_) && (std::get<1>(GetInput()) >= 0) &&
+         (std::get<1>(GetInput()) < world_size_) && !(std::get<2>(GetInput())).empty();
 }
 
 bool ChetverikovaELatticeTorusMPI::PreProcessingImpl() {
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size_);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank_);
-    
-    DetermineGridDimensions();
-    return rows_ * cols_ == world_size_;
+  MPI_Comm_size(MPI_COMM_WORLD, &world_size_);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank_);
+
+  DetermineGridDimensions();
+  return rows_ * cols_ == world_size_;
 }
 
 void ChetverikovaELatticeTorusMPI::DetermineGridDimensions() {
-    int bestRows = 1;
-    int minDiff = world_size_;
-    for (int r = 1; r * r <= world_size_; ++r) {
-        if (world_size_ % r == 0) {
-            int c = world_size_ / r;
-            int diff = std::abs(r - c);
-            if (diff < minDiff) {
-                minDiff = diff;
-                bestRows = r;
-            }
-        }
+  int bestRows = 1;
+  int minDiff = world_size_;
+  for (int r = 1; r * r <= world_size_; ++r) {
+    if (world_size_ % r == 0) {
+      int c = world_size_ / r;
+      int diff = std::abs(r - c);
+      if (diff < minDiff) {
+        minDiff = diff;
+        bestRows = r;
+      }
     }
-    rows_ = bestRows;
-    cols_ = world_size_ / rows_;
+  }
+  rows_ = bestRows;
+  cols_ = world_size_ / rows_;
 }
 
 int ChetverikovaELatticeTorusMPI::GetRank(int row, int col) const {
@@ -61,8 +60,7 @@ int ChetverikovaELatticeTorusMPI::GetOptimalDirection(int start, int end, int si
   int backward = (start - end + size) % size;
   if (forward <= backward) {
     return 1;
-  }
-  else {
+  } else {
     return -1;
   }
 }
@@ -123,8 +121,7 @@ bool ChetverikovaELatticeTorusMPI::RunImpl() {
   int index{};
   if (it != path.end()) {
     index = static_cast<int>(std::distance(path.begin(), it));
-  }
-  else {
+  } else {
     index = -1;
   }
 
@@ -136,10 +133,9 @@ bool ChetverikovaELatticeTorusMPI::RunImpl() {
       MPI_Send(&data_size, 1, MPI_INT, path[1], 0, MPI_COMM_WORLD);
       if (data_size > 0) {
         MPI_Send(recv_data.data(), data_size, MPI_DOUBLE, path[1], 1, MPI_COMM_WORLD);
-        }
       }
-  }
-  else if ((it != path.end()) && (index > 0)) {
+    }
+  } else if ((it != path.end()) && (index > 0)) {
     int prev_node = path[index - 1];
     int recv_size = 0;
     MPI_Recv(&recv_size, 1, MPI_INT, prev_node, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -153,7 +149,7 @@ bool ChetverikovaELatticeTorusMPI::RunImpl() {
       MPI_Send(&data_size, 1, MPI_INT, path[index + 1], 0, MPI_COMM_WORLD);
       if (data_size > 0) {
         MPI_Send(recv_data.data(), data_size, MPI_DOUBLE, path[index + 1], 1, MPI_COMM_WORLD);
-        }
+      }
     }
   }
 

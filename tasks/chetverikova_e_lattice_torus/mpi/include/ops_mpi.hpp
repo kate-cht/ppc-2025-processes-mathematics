@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+
 #include "chetverikova_e_lattice_torus/common/include/common.hpp"
 #include "task/include/task.hpp"
 
