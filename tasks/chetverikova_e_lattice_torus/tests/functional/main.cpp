@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include <mpi.h>
 #include <stb/stb_image.h>
 
 #include <array>
@@ -9,7 +8,7 @@
 #include <stdexcept>
 #include <string>
 #include <tuple>
-
+#include <mpi.h>
 #include "chetverikova_e_lattice_torus/common/include/common.hpp"
 #include "chetverikova_e_lattice_torus/mpi/include/ops_mpi.hpp"
 #include "chetverikova_e_lattice_torus/seq/include/ops_seq.hpp"
@@ -21,7 +20,7 @@ namespace chetverikova_e_lattice_torus {
 class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  private:
   InType input_data_;
-  // OutType expected_data_;
+  //OutType expected_data_;
 
  public:
   static std::string PrintTestParam(const TestType &test_param) {
@@ -52,58 +51,42 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
     std::vector<double> in_data(std::get<2>(input_data_));
     std::vector<int> path(std::get<1>(output_data));
     int end = std::get<1>(input_data_);
-    // int start = std::get<0>(input_data_);
-
+    //int start = std::get<0>(input_data_);
+    
     int rank;
-    int world_size;
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     auto test_info = ::testing::UnitTest::GetInstance()->current_test_info();
     std::string test_name = test_info->name();
     bool is_seq_test = test_name.find("seq") != std::string::npos;
-    // bool is_mpi_test = test_name.find("mpi") != std::string::npos;
+    //bool is_mpi_test = test_name.find("mpi") != std::string::npos;
     if (is_seq_test) {
-      // Все процессы в SEQ должны иметь данные
-      return true;
-      /*шf (out_data.empty()) return false;
-      if (path.empty()) return false;
-
-      // Проверяем корректность данных
-      if (out_data.size() != in_data.size()) return false;
-
-      for (size_t i = 0; i < out_data.size(); i++) {
-          if (std::abs(out_data[i] - in_data[i]) > 1e-7) return false;
-      }
-
-
-      return (path.front() == start) && (path.back() == end);*/
+        return true;
     }
-
+    
     if (rank == end) {
-      if (out_data.size() != in_data.size()) {
+      if (out_data.size() != in_data.size())
         return false;
-      }
-      if (path.empty()) {
+      if (path.empty())
         return false;
-      }
-      for (size_t i = 0; i < out_data.size(); i++) {
-        if (std::abs(out_data[i] - in_data[i]) > 1e-7) {
+      for (size_t i = 0; i < out_data.size(); i++)
+        if (std::abs(out_data[i] - in_data[i]) > 1e-7)
           return false;
-        }
-      }
       return ((path.front() == std::get<0>(input_data_)) && (path.back() == std::get<1>(input_data_)));
-    } else {
+    }
+    else {
       if (!out_data.empty()) {
-        std::cout << "Process " << rank << ": out_data should be empty but has size " << out_data.size() << std::endl;
-        return false;
-      }
-
-      if (!path.empty()) {
-        std::cout << "Process " << rank << ": path should be empty but has size " << path.size() << std::endl;
-        return false;
-      }
-      std::cout << "Process " << rank << ": SUCCESS - Empty data as expected" << std::endl;
-      return true;
+            std::cout << "Process " << rank << ": out_data should be empty but has size " 
+                      << out_data.size() << std::endl;
+            return false;
+        }
+        
+        if (!path.empty()) {
+            std::cout << "Process " << rank << ": path should be empty but has size " 
+                      << path.size() << std::endl;
+            return false;
+        }
+        std::cout << "Process " << rank << ": SUCCESS - Empty data as expected" << std::endl;
+        return true;
     }
   }
 
@@ -118,13 +101,12 @@ TEST_P(ChetverikovaERunFuncTestsProcesses, TopologyTorus) {
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 4> kTestParam = {std::string("test_base"), std::string("test_neib"),
-                                            std::string("test_border"), std::string("test_self_to_self")};
+const std::array<TestType, 4> kTestParam = {std::string("test_base"), std::string("test_neib"), std::string("test_border"), std::string("test_self_to_self")};
 
-const auto kTestTasksList = std::tuple_cat(
-    ppc::util::AddFuncTask<ChetverikovaELatticeTorusMPI, InType>(kTestParam, PPC_SETTINGS_chetverikova_e_lattice_torus),
-    ppc::util::AddFuncTask<ChetverikovaELatticeTorusSEQ, InType>(kTestParam,
-                                                                 PPC_SETTINGS_chetverikova_e_lattice_torus));
+const auto kTestTasksList = std::tuple_cat(ppc::util::AddFuncTask<ChetverikovaELatticeTorusMPI, InType>(
+                                               kTestParam, PPC_SETTINGS_chetverikova_e_lattice_torus),
+                                           ppc::util::AddFuncTask<ChetverikovaELatticeTorusSEQ, InType>(
+                                               kTestParam, PPC_SETTINGS_chetverikova_e_lattice_torus));
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 
