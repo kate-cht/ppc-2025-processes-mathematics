@@ -20,9 +20,8 @@ ChetverikovaELatticeTorusMPI::ChetverikovaELatticeTorusMPI(const InType &in) {
 }
 
 bool ChetverikovaELatticeTorusMPI::ValidationImpl() {
-  MPI_Comm_size(MPI_COMM_WORLD, &world_size_);
-  return (std::get<0>(GetInput()) >= 0) && (std::get<0>(GetInput()) < world_size_) && (std::get<1>(GetInput()) >= 0) &&
-         (std::get<1>(GetInput()) < world_size_) && !(std::get<2>(GetInput())).empty();
+  //MPI_Comm_size(MPI_COMM_WORLD, &world_size_);
+  return (!(std::get<2>(GetInput())).empty());
 }
 
 bool ChetverikovaELatticeTorusMPI::PreProcessingImpl() {
@@ -113,7 +112,10 @@ bool ChetverikovaELatticeTorusMPI::RunImpl() {
   }
   MPI_Bcast(&start, 1, MPI_INT, 0, MPI_COMM_WORLD);
   MPI_Bcast(&end, 1, MPI_INT, 0, MPI_COMM_WORLD);
-
+  if (start >= world_size_ || end >= world_size_ || start < 0 || end < 0) {
+    GetOutput() = std::make_tuple(std::vector<double>{}, std::vector<int>{});
+    return true;
+  }
   // Вычисляем путь для всех процессов
   std::vector<int> path = ComputeFullPath(start, end);
 
