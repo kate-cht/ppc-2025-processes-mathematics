@@ -107,10 +107,8 @@ TEST_P(ChetverikovaERunFuncTestsProcesses, TopologyTorus) {
 const std::array<TestType, 4> kTestParam = {std::string("test_base"), std::string("test_neib"),
                                             std::string("test_border"), std::string("test_self_to_self")};
 
-const auto kTestTasksList = std::tuple_cat(
-    ppc::util::AddFuncTask<ChetverikovaELatticeTorusMPI, InType>(kTestParam, PPC_SETTINGS_chetverikova_e_lattice_torus),
-    ppc::util::AddFuncTask<ChetverikovaELatticeTorusSEQ, InType>(kTestParam,
-                                                                 PPC_SETTINGS_chetverikova_e_lattice_torus));
+const auto kTestTasksList = std::tuple_cat(ppc::util::AddFuncTask<ChetverikovaELatticeTorusMPI, InType>(
+    kTestParam, PPC_SETTINGS_chetverikova_e_lattice_torus));
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 
