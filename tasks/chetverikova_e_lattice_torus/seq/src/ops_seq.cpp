@@ -1,7 +1,6 @@
 #include "chetverikova_e_lattice_torus/seq/include/ops_seq.hpp"
-
-#include <cstddef>
-
+#include <tuple>
+#include <vector>
 #include "chetverikova_e_lattice_torus/common/include/common.hpp"
 
 namespace chetverikova_e_lattice_torus {

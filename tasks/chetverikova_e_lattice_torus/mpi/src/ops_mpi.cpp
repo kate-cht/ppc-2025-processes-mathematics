@@ -7,6 +7,7 @@
 #include <iterator>
 #include <utility>
 #include <vector>
+#include <tuple>
 
 #include "chetverikova_e_lattice_torus/common/include/common.hpp"
 
@@ -21,7 +22,7 @@ ChetverikovaELatticeTorusMPI::ChetverikovaELatticeTorusMPI(const InType &in) {
 
 bool ChetverikovaELatticeTorusMPI::ValidationImpl() {
   // MPI_Comm_size(MPI_COMM_WORLD, &world_size_);
-  return (!(std::get<2>(GetInput())).empty());
+  return true;
 }
 
 bool ChetverikovaELatticeTorusMPI::PreProcessingImpl() {
@@ -33,19 +34,19 @@ bool ChetverikovaELatticeTorusMPI::PreProcessingImpl() {
 }
 
 void ChetverikovaELatticeTorusMPI::DetermineGridDimensions() {
-  int bestRows = 1;
-  int minDiff = world_size_;
-  for (int r = 1; r * r <= world_size_; ++r) {
-    if (world_size_ % r == 0) {
-      int c = world_size_ / r;
-      int diff = std::abs(r - c);
-      if (diff < minDiff) {
-        minDiff = diff;
-        bestRows = r;
+  int best_rows = 1;
+  int min_diff = world_size_;
+  for (int row = 1; row * row <= world_size_; ++row) {
+    if (world_size_ % row == 0) {
+      int c = world_size_ / row;
+      int diff = std::abs(row - c);
+      if (diff < min_diff) {
+        min_diff = diff;
+        best_rows = row;
       }
     }
   }
-  rows_ = bestRows;
+  rows_ = best_rows;
   cols_ = world_size_ / rows_;
 }
 
@@ -120,7 +121,7 @@ bool ChetverikovaELatticeTorusMPI::RunImpl() {
   std::vector<int> path = ComputeFullPath(start, end);
 
   // Ищем текущий процесс в пути
-  auto it = std::find(path.begin(), path.end(), rank_);
+  auto it = std::ranges::find(path, rank_);
   bool is_on_path = (it != path.end());
 
   // Подготавливаем данные для приема/отправки

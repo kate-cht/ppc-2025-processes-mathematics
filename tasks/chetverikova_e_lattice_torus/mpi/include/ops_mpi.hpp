@@ -20,10 +20,10 @@ class ChetverikovaELatticeTorusMPI : public BaseTask {
   bool PostProcessingImpl() override;
 
   void DetermineGridDimensions();
-  int GetRank(int row, int col) const;
-  static int GetOptimalDirection(int start, int end, int size);
-  int ComputeNextNode(int current, int dest) const;
-  std::vector<int> ComputeFullPath(int source, int dest) const;
+  [[nodiscard]] int GetRank(int row, int col) const;
+  [[nodiscard]] static int GetOptimalDirection(int start, int end, int size);
+  [[nodiscard]] int ComputeNextNode(int curr, int end) const;
+  std::vector<int> ComputeFullPath(int start, int end) const;
 
   int world_size_ = 0;
   int rank_ = 0;
