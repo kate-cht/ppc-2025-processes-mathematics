@@ -21,7 +21,6 @@ ChetverikovaELatticeTorusMPI::ChetverikovaELatticeTorusMPI(const InType &in) {
 }
 
 bool ChetverikovaELatticeTorusMPI::ValidationImpl() {
-  // MPI_Comm_size(MPI_COMM_WORLD, &world_size_);
   return true;
 }
 

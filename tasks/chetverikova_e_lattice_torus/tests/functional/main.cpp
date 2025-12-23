@@ -30,7 +30,13 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
 
  protected:
   void SetUp() override {
+
+    int world_size = 0;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
+    if (world_size < 2) {
+      GTEST_SKIP() << "Number of processes is less than 2";
+    }
     std::string filename = params + ".txt";
     std::string abs_path = ppc::util::GetAbsoluteTaskPath(PPC_ID_chetverikova_e_lattice_torus, filename);
     std::ifstream file(abs_path);
@@ -60,6 +66,7 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
     if (is_seq_test) {
       return true;
     }
+    
     int rank = 0;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     if (rank == end) {
@@ -77,15 +84,12 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
       return ((path.front() == std::get<0>(input_data_)) && (path.back() == std::get<1>(input_data_)));
     } else {
       if (!out_data.empty()) {
-        std::cout << "Process " << rank << ": out_data should be empty but has size " << out_data.size() << std::endl;
         return false;
       }
 
       if (!path.empty()) {
-        std::cout << "Process " << rank << ": path should be empty but has size " << path.size() << std::endl;
         return false;
       }
-      std::cout << "Process " << rank << ": SUCCESS - Empty data as expected" << std::endl;
       return true;
     }
   }
