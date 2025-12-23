@@ -25,7 +25,7 @@ class ChetverikovaELatticeTorusMPI : public BaseTask {
   [[nodiscard]] int ComputeNextNode(int curr, int end) const;
   [[nodiscard]] std::vector<int> ComputeFullPath(int start, int end) const;
   [[nodiscard]] static std::vector<double> ReceiveData(int sender);
-  [[nodiscard]] static void SendDataToNext(const std::vector<double> &data, int next_node);
+  static void SendDataToNext(const std::vector<double> &data, int next_node);
 
   int world_size_ = 0;
   int rank_ = 0;
