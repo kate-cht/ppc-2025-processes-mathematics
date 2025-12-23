@@ -18,7 +18,6 @@ namespace chetverikova_e_lattice_torus {
 
 class ChetverikovaERunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
   InType input_data_;
-  // OutType expected_data_{};
 
   void SetUp() override {
     int mpi_init = 0;
@@ -71,15 +70,14 @@ class ChetverikovaERunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InT
         }
       }
       return ((path.front() == std::get<0>(input_data_)) && (path.back() == std::get<1>(input_data_)));
-    } else {
-      if (!out_data.empty()) {
-        return false;
-      }
-      if (!path.empty()) {
-        return false;
-      }
-      return true;
     }
+    if (!out_data.empty()) {
+      return false;
+    }
+    if (!path.empty()) {
+      return false;
+    }
+    return true;
   }
 
   InType GetTestInputData() final {

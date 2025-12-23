@@ -9,10 +9,10 @@
 #include <stdexcept>
 #include <string>
 #include <tuple>
+#include <vector>
 
 #include "chetverikova_e_lattice_torus/common/include/common.hpp"
 #include "chetverikova_e_lattice_torus/mpi/include/ops_mpi.hpp"
-#include "chetverikova_e_lattice_torus/seq/include/ops_seq.hpp"
 #include "util/include/func_test_util.hpp"
 #include "util/include/util.hpp"
 
@@ -21,7 +21,6 @@ namespace chetverikova_e_lattice_torus {
 class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  private:
   InType input_data_;
-  // OutType expected_data_;
 
  public:
   static std::string PrintTestParam(const TestType &test_param) {
@@ -30,6 +29,12 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
 
  protected:
   void SetUp() override {
+    int mpi_init = 0;
+    MPI_Initialized(&mpi_init);
+    if (mpi_init == 0) {
+      GTEST_SKIP() << "MPI in not init";
+      return;
+    }
     int world_size = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
@@ -57,11 +62,9 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
     std::vector<double> in_data(std::get<2>(input_data_));
     std::vector<int> path(std::get<1>(output_data));
     int end = std::get<1>(input_data_);
-    // int start = std::get<0>(input_data_);
     const auto *test_info = ::testing::UnitTest::GetInstance()->current_test_info();
     std::string test_name = test_info->name();
     bool is_seq_test = test_name.find("seq") != std::string::npos;
-    // bool is_mpi_test = test_name.find("mpi") != std::string::npos;
     if (is_seq_test) {
       return true;
     }
@@ -81,16 +84,14 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
         }
       }
       return ((path.front() == std::get<0>(input_data_)) && (path.back() == std::get<1>(input_data_)));
-    } else {
-      if (!out_data.empty()) {
-        return false;
-      }
-
-      if (!path.empty()) {
-        return false;
-      }
-      return true;
     }
+    if (!out_data.empty()) {
+      return false;
+    }
+    if (!path.empty()) {
+      return false;
+    }
+    return true;
   }
 
   InType GetTestInputData() final {

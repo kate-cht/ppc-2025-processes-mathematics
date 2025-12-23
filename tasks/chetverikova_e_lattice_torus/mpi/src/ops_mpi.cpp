@@ -16,7 +16,6 @@ namespace chetverikova_e_lattice_torus {
 ChetverikovaELatticeTorusMPI::ChetverikovaELatticeTorusMPI(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
-  // Инициализируем пустыми данными
   GetOutput() = std::make_tuple(std::vector<double>{}, std::vector<int>{});
 }
 
@@ -71,13 +70,11 @@ int ChetverikovaELatticeTorusMPI::ComputeNextNode(int curr, int end) const {
   int dest_row = end / cols_;
   int dest_col = end % cols_;
 
-  // Сначала двигаемся по столбцам
   if (curr_col != dest_col) {
     int dir = GetOptimalDirection(curr_col, dest_col, cols_);
     return GetRank(curr_row, curr_col + dir);
   }
 
-  // Затем по строкам
   if (curr_row != dest_row) {
     int dir = GetOptimalDirection(curr_row, dest_row, rows_);
     return GetRank(curr_row + dir, curr_col);
@@ -101,90 +98,76 @@ std::vector<int> ChetverikovaELatticeTorusMPI::ComputeFullPath(int start, int en
   return path;
 }
 
+std::vector<double> ChetverikovaELatticeTorusMPI::ReceiveData(int sender) {
+  int recv_size = 0;
+  MPI_Recv(&recv_size, 1, MPI_INT, sender, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+  std::vector<double> data;
+  if (recv_size > 0) {
+    data.resize(recv_size);
+    MPI_Recv(data.data(), recv_size, MPI_DOUBLE, sender, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  }
+  return data;
+}
+
+void ChetverikovaELatticeTorusMPI::SendDataToNext(const std::vector<double> &data, int next_node) {
+  int data_size = static_cast<int>(data.size());
+  MPI_Send(&data_size, 1, MPI_INT, next_node, 0, MPI_COMM_WORLD);
+
+  if (data_size > 0) {
+    MPI_Send(data.data(), data_size, MPI_DOUBLE, next_node, 1, MPI_COMM_WORLD);
+  }
+}
+
 bool ChetverikovaELatticeTorusMPI::RunImpl() {
   int start = 0;
   int end = 0;
 
-  // Распространяем информацию о отправителе и получателе
   if (rank_ == 0) {
     start = std::get<0>(GetInput());  // отправитель
     end = std::get<1>(GetInput());    // получатель
   }
   MPI_Bcast(&start, 1, MPI_INT, 0, MPI_COMM_WORLD);
   MPI_Bcast(&end, 1, MPI_INT, 0, MPI_COMM_WORLD);
-  if (start >= world_size_ || end >= world_size_ || start < 0 || end < 0) {
+  bool not_correct = start >= world_size_ || end >= world_size_ || start < 0 || end < 0;
+  if (not_correct) {
     GetOutput() = std::make_tuple(std::vector<double>{}, std::vector<int>{});
     return true;
   }
-  // Вычисляем путь для всех процессов
-  std::vector<int> path = ComputeFullPath(start, end);
 
-  // Ищем текущий процесс в пути
+  std::vector<int> path = ComputeFullPath(start, end);
   auto it = std::ranges::find(path, rank_);
   bool is_on_path = (it != path.end());
 
-  // Подготавливаем данные для приема/отправки
   std::vector<double> recv_data;
 
   if (rank_ == start) {
-    // Отправитель
     recv_data = std::get<2>(GetInput());
-
     if (start != end) {
-      // Отправляем размер данных
-      int data_size = static_cast<int>(recv_data.size());
-      int next_node = path[1];
-      MPI_Send(&data_size, 1, MPI_INT, next_node, 0, MPI_COMM_WORLD);
-
-      // Отправляем сами данные
-      if (data_size > 0) {
-        MPI_Send(recv_data.data(), data_size, MPI_DOUBLE, next_node, 1, MPI_COMM_WORLD);
-      }
+      SendDataToNext(recv_data, path[1]);
     }
-  } else if (is_on_path && rank_ != start) {
-    // Промежуточный узел или получатель
+  } else if (is_on_path) {
     int index = static_cast<int>(std::distance(path.begin(), it));
     int prev_node = path[index - 1];
 
-    // Получаем размер данных
-    int recv_size = 0;
-    MPI_Recv(&recv_size, 1, MPI_INT, prev_node, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    recv_data = ReceiveData(prev_node);
 
-    // Получаем данные
-    if (recv_size > 0) {
-      recv_data.resize(recv_size);
-      MPI_Recv(recv_data.data(), recv_size, MPI_DOUBLE, prev_node, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    }
-
-    // Если не получатель - пересылаем дальше
     if (rank_ != end && (index + 1) < static_cast<int>(path.size())) {
       int next_node = path[index + 1];
-      int data_size = static_cast<int>(recv_data.size());
-      MPI_Send(&data_size, 1, MPI_INT, next_node, 0, MPI_COMM_WORLD);
-
-      if (data_size > 0) {
-        MPI_Send(recv_data.data(), data_size, MPI_DOUBLE, next_node, 1, MPI_COMM_WORLD);
-      }
+      SendDataToNext(recv_data, next_node);
     }
   }
-
-  // Устанавливаем выходные данные
   if (rank_ == end) {
-    // Только получатель сохраняет данные и путь
     GetOutput() = std::make_tuple(std::move(recv_data), std::move(path));
   } else {
-    // Все остальные процессы имеют пустые выходные данные
     GetOutput() = std::make_tuple(std::vector<double>{}, std::vector<int>{});
   }
 
-  // Синхронизация перед завершением
   MPI_Barrier(MPI_COMM_WORLD);
-
   return true;
 }
 
 bool ChetverikovaELatticeTorusMPI::PostProcessingImpl() {
   return true;
 }
-
 }  // namespace chetverikova_e_lattice_torus
