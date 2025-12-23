@@ -43,7 +43,7 @@ class ChetverikovaERunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InT
     std::vector<int> path(std::get<1>(output_data));
     int end = std::get<1>(input_data_);
 
-    int rank=0;
+    int rank = 0;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     auto test_info = ::testing::UnitTest::GetInstance()->current_test_info();
     std::string test_name = test_info->name();
@@ -89,8 +89,7 @@ TEST_P(ChetverikovaERunPerfTestProcesses, RunPerfModes) {
 }
 
 const auto kAllPerfTasks =
-    ppc::util::MakeAllPerfTasks<InType, ChetverikovaELatticeTorusMPI>(
-        PPC_SETTINGS_chetverikova_e_lattice_torus);
+    ppc::util::MakeAllPerfTasks<InType, ChetverikovaELatticeTorusMPI>(PPC_SETTINGS_chetverikova_e_lattice_torus);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 

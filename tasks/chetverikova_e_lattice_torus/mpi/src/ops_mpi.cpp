@@ -5,9 +5,9 @@
 #include <algorithm>
 #include <cmath>
 #include <iterator>
+#include <tuple>
 #include <utility>
 #include <vector>
-#include <tuple>
 
 #include "chetverikova_e_lattice_torus/common/include/common.hpp"
 
