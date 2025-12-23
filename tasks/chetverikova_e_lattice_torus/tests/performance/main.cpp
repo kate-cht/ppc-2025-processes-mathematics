@@ -42,11 +42,11 @@ class ChetverikovaERunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InT
     if (!(file >> std::get<0>(input_data_) >> std::get<1>(input_data_))) {
       throw std::runtime_error("Failed to read required parameters");
     }
-    
+
     while (file >> tmp) {
       std::get<2>(input_data_).push_back(tmp);
     }
-    
+
     file.close();
   }
 
@@ -71,8 +71,7 @@ class ChetverikovaERunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InT
         }
       }
       return ((path.front() == std::get<0>(input_data_)) && (path.back() == std::get<1>(input_data_)));
-    } 
-    else {
+    } else {
       if (!out_data.empty()) {
         return false;
       }

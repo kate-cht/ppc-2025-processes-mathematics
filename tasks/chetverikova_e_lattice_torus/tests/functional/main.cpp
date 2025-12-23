@@ -30,7 +30,6 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
 
  protected:
   void SetUp() override {
-
     int world_size = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
@@ -66,7 +65,7 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
     if (is_seq_test) {
       return true;
     }
-    
+
     int rank = 0;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     if (rank == end) {
