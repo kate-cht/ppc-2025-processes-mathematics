@@ -10,19 +10,18 @@
 namespace chetverikova_e_sobel {
 
 namespace {
-  constexpr std::array<std::array<int, 3>, 3> kernel_sobel_x = {{{{-1, 0, 1}}, {{-2, 0, 2}}, {{-1, 0, 1}}}};
-  constexpr std::array<std::array<int, 3>, 3> kernel_sobel_y = {{{{-1, -2, -1}}, {{0, 0, 0}}, {{1, 2, 1}}}};
+constexpr std::array<std::array<int, 3>, 3> kernel_sobel_x = {{{{-1, 0, 1}}, {{-2, 0, 2}}, {{-1, 0, 1}}}};
+constexpr std::array<std::array<int, 3>, 3> kernel_sobel_y = {{{{-1, -2, -1}}, {{0, 0, 0}}, {{1, 2, 1}}}};
 
-  std::vector<int> ConvertToGray(const std::vector<int> &pixels, int width, int channels, int start_row,
-                                        int num_rows) {
-    const auto size = static_cast<std::size_t>(width) * static_cast<std::size_t>(num_rows);
-    std::vector<int> gray(size);
+std::vector<int> ConvertToGray(const std::vector<int> &pixels, int width, int channels, int start_row, int num_rows) {
+  const auto size = static_cast<std::size_t>(width) * static_cast<std::size_t>(num_rows);
+  std::vector<int> gray(size);
 
-    if (channels == 1) {
-      const int src_idx = start_row * width; 
-      memcpy(gray.data(), pixels.data() + src_idx, width * sizeof(int) * num_rows);
+  if (channels == 1) {
+    const int src_idx = start_row * width;
+    memcpy(gray.data(), pixels.data() + src_idx, width * sizeof(int) * num_rows);
     return gray;
-    }
+  }
 
   for (int row_idx = 0; row_idx < num_rows; ++row_idx) {
     const int src_y = start_row + row_idx;
@@ -40,33 +39,27 @@ namespace {
 }
 
 int ConvSobel(const std::vector<int> &local_data, int i, int width) {
-  int gx = kernel_sobel_x[0][0] * local_data[i-width-1] + 
-           kernel_sobel_x[0][1] * local_data[i-width] +   
-           kernel_sobel_x[0][2] * local_data[i-width+1] +
-           
-           kernel_sobel_x[1][0] * local_data[i-1] + 
-           kernel_sobel_x[1][1] * local_data[i] +          
-           kernel_sobel_x[1][2] * local_data[i+1] +
-           
-           kernel_sobel_x[2][0] * local_data[i+width-1] + 
-           kernel_sobel_x[2][1] * local_data[i+width] +   
-           kernel_sobel_x[2][2] * local_data[i+width+1];
+  int gx = kernel_sobel_x[0][0] * local_data[i - width - 1] + kernel_sobel_x[0][1] * local_data[i - width] +
+           kernel_sobel_x[0][2] * local_data[i - width + 1] +
 
-  int gy = kernel_sobel_y[0][0] * local_data[i-width-1] + 
-           kernel_sobel_y[0][1] * local_data[i-width] +
-           kernel_sobel_y[0][2] * local_data[i-width+1] +
-           
-           kernel_sobel_y[1][0] * local_data[i-1] + 
-           kernel_sobel_y[1][1] * local_data[i] +     
-           kernel_sobel_y[1][2] * local_data[i+1] +
-           
-           kernel_sobel_y[2][0] * local_data[i+width-1] + 
-           kernel_sobel_y[2][1] * local_data[i+width] +
-           kernel_sobel_y[2][2] * local_data[i+width+1];
+           kernel_sobel_x[1][0] * local_data[i - 1] + kernel_sobel_x[1][1] * local_data[i] +
+           kernel_sobel_x[1][2] * local_data[i + 1] +
+
+           kernel_sobel_x[2][0] * local_data[i + width - 1] + kernel_sobel_x[2][1] * local_data[i + width] +
+           kernel_sobel_x[2][2] * local_data[i + width + 1];
+
+  int gy = kernel_sobel_y[0][0] * local_data[i - width - 1] + kernel_sobel_y[0][1] * local_data[i - width] +
+           kernel_sobel_y[0][2] * local_data[i - width + 1] +
+
+           kernel_sobel_y[1][0] * local_data[i - 1] + kernel_sobel_y[1][1] * local_data[i] +
+           kernel_sobel_y[1][2] * local_data[i + 1] +
+
+           kernel_sobel_y[2][0] * local_data[i + width - 1] + kernel_sobel_y[2][1] * local_data[i + width] +
+           kernel_sobel_y[2][2] * local_data[i + width + 1];
 
   double magnitude = std::sqrt(static_cast<double>(gx * gx + gy * gy));
-    magnitude = std::min(255.0, std::max(0.0, magnitude));
-  
+  magnitude = std::min(255.0, std::max(0.0, magnitude));
+
   return static_cast<int>(std::round(magnitude));
 }
 
@@ -79,16 +72,16 @@ std::vector<int> ApplySobelOperatorLocal(const std::vector<int> &local_data, int
   for (int j = 1; j < local_height - 1; ++j) {
     for (int i = 1; i < width - 1; ++i) {
       int input_idx = j * width + i;
-      int output_idx = (j - 1) * width + i; 
+      int output_idx = (j - 1) * width + i;
 
       int sobel_value = ConvSobel(local_data, input_idx, width);
       result[output_idx] = sobel_value;
     }
   }
-  
+
   return result;
 }
-} //namespace
+}  // namespace
 
 ChetverikovaESobelMPI::ChetverikovaESobelMPI(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
@@ -112,25 +105,24 @@ bool ChetverikovaESobelMPI::RunImpl() {
   int width = 0;
   int height = 0;
   std::vector<int> all_pixels;
-  const ImageData* input = nullptr;
+  const ImageData *input = nullptr;
 
-  
   input = &GetInput();
   width = input->width;
   height = input->height;
   all_pixels = input->pixels;
   if (all_pixels.empty()) {
     if (rank == 0) {
-        return false;
-      }
+      return false;
+    }
   }
   MPI_Bcast(&width, 1, MPI_INT, 0, MPI_COMM_WORLD);
   MPI_Bcast(&height, 1, MPI_INT, 0, MPI_COMM_WORLD);
   if (width < 3 || height < 3) {
-      GetOutput() = all_pixels;
-      
-      return true;
-    }
+    GetOutput() = all_pixels;
+
+    return true;
+  }
   std::vector<int> lines_on_proc(world_size, 0);
   std::vector<int> displ(world_size, 0);
   std::vector<int> final_displ(world_size, 0);
@@ -148,43 +140,23 @@ bool ChetverikovaESobelMPI::RunImpl() {
     displ[i] = temp;
     final_displ[i] = temp_final;
     temp += lines_on_proc[i] * width;
-    counts[i] = (lines_on_proc[i] + 2)* width;
+    counts[i] = (lines_on_proc[i] + 2) * width;
     final_counts[i] = lines_on_proc[i] * width;
     temp_final += final_counts[i];
   }
 
-
   std::vector<int> local_data(counts[rank], 0);
-  
+
   std::vector<int> res(width * (height), 0);
-  
-  MPI_Scatterv(
-    rank == 0 ? all_pixels.data() : nullptr,
-    counts.data(),
-    displ.data(),
-    MPI_INT,
-    local_data.data(),
-    counts[rank],
-    MPI_INT,
-    0,
-    MPI_COMM_WORLD
-  );
-  
-  
+
+  MPI_Scatterv(rank == 0 ? all_pixels.data() : nullptr, counts.data(), displ.data(), MPI_INT, local_data.data(),
+               counts[rank], MPI_INT, 0, MPI_COMM_WORLD);
+
   int local_total_rows = counts[rank] / width;
   std::vector<int> res_proc = ApplySobelOperatorLocal(local_data, width, local_total_rows);
- 
-  MPI_Gatherv(
-    res_proc.data(),
-    final_counts[rank],
-    MPI_INT,
-    rank == 0 ? res.data() : nullptr,
-    final_counts.data(),
-    final_displ.data(),
-    MPI_INT,
-    0,
-    MPI_COMM_WORLD
-  );
+
+  MPI_Gatherv(res_proc.data(), final_counts[rank], MPI_INT, rank == 0 ? res.data() : nullptr, final_counts.data(),
+              final_displ.data(), MPI_INT, 0, MPI_COMM_WORLD);
   // Рассылаем результат
   int result_size = width * height;
   MPI_Bcast(&result_size, 1, MPI_INT, 0, MPI_COMM_WORLD);
