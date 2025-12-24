@@ -30,6 +30,12 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
 
  protected:
   void SetUp() override {
+    int mpi_init = 0;
+    MPI_Initialized(&mpi_init);
+    if (mpi_init == 0) {
+      GTEST_SKIP() << "MPI in not init";
+      return;
+    }
     int rank = 0;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
@@ -78,9 +84,9 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
       return true;
     }
 
-    for (int i = 0; i < output_data.size(); ++i) {
-      int row = i / input_data_.width;
-      int col = i % input_data_.width;
+    for (size_t i = 0; i < output_data.size(); ++i) {
+      size_t row = i / input_data_.width;
+      size_t col = i % input_data_.width;
 
       if (row == 0 || row == input_data_.height - 1 || col == 0 || col == input_data_.width - 1) {
         if (output_data[i] != 0) {

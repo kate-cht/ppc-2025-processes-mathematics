@@ -75,9 +75,9 @@ class ChetverikovaERunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InT
       return false;
     }
 
-    for (int i = 0; i < output_data.size(); ++i) {
-      int row = i / input_data_.width;
-      int col = i % input_data_.width;
+    for (size_t i = 0; i < output_data.size(); ++i) {
+      size_t row = i / input_data_.width;
+      size_t col = i % input_data_.width;
 
       if ((row == 0 || row == input_data_.height - 1 || col == 0 || col == input_data_.width - 1) &&
           output_data[i] != 0) {
