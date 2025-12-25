@@ -21,7 +21,6 @@ namespace chetverikova_e_sobel {
 class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  private:
   InType input_data_;
-  OutType expected_data_{};
 
  public:
   static std::string PrintTestParam(const TestType &test_param) {
@@ -92,8 +91,8 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
       return true;
     }
 
-    const std::size_t width = static_cast<std::size_t>(input_data_.width);
-    const std::size_t height = static_cast<std::size_t>(input_data_.height);
+    const auto width = static_cast<std::size_t>(input_data_.width);
+    const auto height = static_cast<std::size_t>(input_data_.height);
 
     for (std::size_t i = 0; i < output_data.size(); ++i) {
       const std::size_t row = i / width;
@@ -110,8 +109,8 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
 
     for (int row = 1; row < input_data_.height - 1; ++row) {
       for (int col = 1; col < input_data_.width - 1; ++col) {
-        std::size_t idx =
-            static_cast<std::size_t>(row) * static_cast<std::size_t>(input_data_.width) + static_cast<std::size_t>(col);
+        std::size_t idx = (static_cast<std::size_t>(row) * static_cast<std::size_t>(input_data_.width)) +
+                          static_cast<std::size_t>(col);
         if (output_data[idx] != 0) {
           has_non_zero = true;
         }

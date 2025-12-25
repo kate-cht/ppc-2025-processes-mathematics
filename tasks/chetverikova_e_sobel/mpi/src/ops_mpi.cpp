@@ -2,6 +2,7 @@
 
 #include <mpi.h>
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstddef>
@@ -16,29 +17,25 @@ constexpr std::array<std::array<int, 3>, 3> kKernelSobelX = {{{{-1, 0, 1}}, {{-2
 constexpr std::array<std::array<int, 3>, 3> kKernelSobelY = {{{{-1, -2, -1}}, {{0, 0, 0}}, {{1, 2, 1}}}};
 
 int ConvSobel(const std::vector<int> &local_data, int i, int width) {
-  int gx = (kKernelSobelX[0][0] * local_data[static_cast<std::size_t>(i - width - 1)]) +
-           (kKernelSobelX[0][1] * local_data[static_cast<std::size_t>(i - width)]) +
-           (kKernelSobelX[0][2] * local_data[static_cast<std::size_t>(i - width + 1)]) +
+  auto idx = static_cast<std::size_t>(i);
+  auto w = static_cast<std::size_t>(width);
+  int gx = (kKernelSobelX[0][0] * local_data[(idx - w - 1)]) + (kKernelSobelX[0][1] * local_data[(idx - w)]) +
+           (kKernelSobelX[0][2] * local_data[(idx - w + 1)]) +
 
-           (kKernelSobelX[1][0] * local_data[static_cast<std::size_t>(i - 1)]) +
-           (kKernelSobelX[1][1] * local_data[static_cast<std::size_t>(i)]) +
-           (kKernelSobelX[1][2] * local_data[static_cast<std::size_t>(i + 1)]) +
+           (kKernelSobelX[1][0] * local_data[(idx - 1)]) + (kKernelSobelX[1][1] * local_data[idx]) +
+           (kKernelSobelX[1][2] * local_data[(idx + 1)]) +
 
-           (kKernelSobelX[2][0] * local_data[static_cast<std::size_t>(i + width - 1)]) +
-           (kKernelSobelX[2][1] * local_data[static_cast<std::size_t>(i + width)]) +
-           (kKernelSobelX[2][2] * local_data[static_cast<std::size_t>(i + width + 1)]);
+           (kKernelSobelX[2][0] * local_data[(idx + w - 1)]) + (kKernelSobelX[2][1] * local_data[(idx + w)]) +
+           (kKernelSobelX[2][2] * local_data[(idx + w + 1)]);
 
-  int gy = (kKernelSobelY[0][0] * local_data[static_cast<std::size_t>(i - width - 1)]) +
-           (kKernelSobelY[0][1] * local_data[static_cast<std::size_t>(i - width)]) +
-           (kKernelSobelY[0][2] * local_data[static_cast<std::size_t>(i - width + 1)]) +
+  int gy = (kKernelSobelY[0][0] * local_data[(idx - w - 1)]) + (kKernelSobelY[0][1] * local_data[(idx - w)]) +
+           (kKernelSobelY[0][2] * local_data[(idx - w + 1)]) +
 
-           (kKernelSobelY[1][0] * local_data[static_cast<std::size_t>(i - 1)]) +
-           (kKernelSobelY[1][1] * local_data[static_cast<std::size_t>(i)]) +
-           (kKernelSobelY[1][2] * local_data[static_cast<std::size_t>(i + 1)]) +
+           (kKernelSobelY[1][0] * local_data[(idx - 1)]) + (kKernelSobelY[1][1] * local_data[idx]) +
+           (kKernelSobelY[1][2] * local_data[(idx + 1)]) +
 
-           (kKernelSobelY[2][0] * local_data[static_cast<std::size_t>(i + width - 1)]) +
-           (kKernelSobelY[2][1] * local_data[static_cast<std::size_t>(i + width)]) +
-           (kKernelSobelY[2][2] * local_data[static_cast<std::size_t>(i + width + 1)]);
+           (kKernelSobelY[2][0] * local_data[(idx + w - 1)]) + (kKernelSobelY[2][1] * local_data[(idx + w)]) +
+           (kKernelSobelY[2][2] * local_data[(idx + w + 1)]);
 
   double magnitude = std::sqrt(static_cast<double>((gx * gx) + (gy * gy)));
   magnitude = std::min(255.0, std::max(0.0, magnitude));
@@ -112,7 +109,7 @@ bool ChetverikovaESobelMPI::RunImpl() {
     return true;
   }
 
-  std::size_t world_size_t = static_cast<std::size_t>(world_size);
+  auto world_size_t = static_cast<std::size_t>(world_size);
   std::vector<int> lines_on_proc(world_size_t, 0);
   std::vector<int> displ(world_size_t, 0);
   std::vector<int> final_displ(world_size_t, 0);

@@ -9,7 +9,6 @@
 
 #include "chetverikova_e_sobel/common/include/common.hpp"
 #include "chetverikova_e_sobel/mpi/include/ops_mpi.hpp"
-#include "chetverikova_e_sobel/seq/include/ops_seq.hpp"
 #include "util/include/perf_test_util.hpp"
 #include "util/include/util.hpp"
 
@@ -79,8 +78,8 @@ class ChetverikovaERunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InT
       return false;
     }
 
-    const std::size_t width = static_cast<std::size_t>(input_data_.width);
-    const std::size_t height = static_cast<std::size_t>(input_data_.height);
+    const auto width = static_cast<std::size_t>(input_data_.width);
+    const auto height = static_cast<std::size_t>(input_data_.height);
 
     for (std::size_t i = 0; i < output_data.size(); ++i) {
       std::size_t row = i / width;

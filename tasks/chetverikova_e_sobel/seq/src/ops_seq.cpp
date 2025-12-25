@@ -7,6 +7,7 @@
 #include <cstring>
 #include <vector>
 
+#include "chetverikova_e_sobel/common/include/common.hpp"
 namespace chetverikova_e_sobel {
 
 namespace {
@@ -77,10 +78,7 @@ bool ChetverikovaESobelSEQ::ValidationImpl() {
 
   std::size_t expected_size = static_cast<std::size_t>(input.width) * static_cast<std::size_t>(input.height) *
                               static_cast<std::size_t>(input.channels);
-  if (input.pixels.size() != expected_size) {
-    return false;
-  }
-  return true;
+  return input.pixels.size() == expected_size;
 }
 
 bool ChetverikovaESobelSEQ::PreProcessingImpl() {
@@ -103,11 +101,11 @@ bool ChetverikovaESobelSEQ::RunImpl() {
     int channels = input.channels;
 
     if (channels >= 3) {
-      for (std::size_t y = 0; y < static_cast<std::size_t>(input.height); ++y) {
-        for (std::size_t x = 0; x < static_cast<std::size_t>(input.width); ++x) {
-          std::size_t src_idx = (y * static_cast<std::size_t>(input.width) + x) * static_cast<std::size_t>(channels);
-          std::size_t dst_idx = y * static_cast<std::size_t>(input.width) + x;
-
+      for (std::size_t row_idx = 0; row_idx < static_cast<std::size_t>(input.height); ++row_idx) {
+        for (std::size_t col_idx = 0; col_idx < static_cast<std::size_t>(input.width); ++col_idx) {
+          std::size_t src_idx =
+              (row_idx * static_cast<std::size_t>(input.width) + col_idx) * static_cast<std::size_t>(channels);
+          std::size_t dst_idx = (row_idx * static_cast<std::size_t>(input.width)) + col_idx;
           int r = src[src_idx];
           int g = src[src_idx + 1];
           int b = src[src_idx + 2];
@@ -136,11 +134,7 @@ bool ChetverikovaESobelSEQ::PostProcessingImpl() {
 
   std::size_t expected_size = static_cast<std::size_t>(input.width) * static_cast<std::size_t>(input.height);
 
-  if (output.size() != expected_size) {
-    return false;
-  }
-
-  return true;
+  return output.size() == expected_size;
 }
 
 }  // namespace chetverikova_e_sobel
