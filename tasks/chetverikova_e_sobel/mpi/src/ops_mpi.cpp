@@ -130,6 +130,7 @@ bool ChetverikovaESobelMPI::RunImpl() {
     if (i < rem) {
       lines_on_proc[idx]++;
     }
+
     displ[idx] = temp;
     final_displ[idx] = temp_final;
     temp += lines_on_proc[idx] * width;
