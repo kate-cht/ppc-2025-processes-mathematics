@@ -103,8 +103,8 @@ TEST_P(ChetverikovaERunPerfTestProcesses, RunPerfModes) {
   ExecuteTest(GetParam());
 }
 
-const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, ChetverikovaESobelMPI, ChetverikovaESobelSEQ>(
-    PPC_SETTINGS_chetverikova_e_sobel);
+const auto kAllPerfTasks =
+    ppc::util::MakeAllPerfTasks<InType, ChetverikovaESobelMPI>(PPC_SETTINGS_chetverikova_e_sobel);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
