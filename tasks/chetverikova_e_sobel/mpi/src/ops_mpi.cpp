@@ -12,37 +12,36 @@
 namespace chetverikova_e_sobel {
 
 namespace {
-constexpr std::array<std::array<int, 3>, 3> kernel_sobel_x = {{{{-1, 0, 1}}, {{-2, 0, 2}}, {{-1, 0, 1}}}};
-constexpr std::array<std::array<int, 3>, 3> kernel_sobel_y = {{{{-1, -2, -1}}, {{0, 0, 0}}, {{1, 2, 1}}}};
+constexpr std::array<std::array<int, 3>, 3> kKernelSobelX = {{{{-1, 0, 1}}, {{-2, 0, 2}}, {{-1, 0, 1}}}};
+constexpr std::array<std::array<int, 3>, 3> kKernelSobelY = {{{{-1, -2, -1}}, {{0, 0, 0}}, {{1, 2, 1}}}};
 
 int ConvSobel(const std::vector<int> &local_data, int i, int width) {
-  int gx = kernel_sobel_x[0][0] * local_data[static_cast<std::size_t>(i - width - 1)] +
-           kernel_sobel_x[0][1] * local_data[static_cast<std::size_t>(i - width)] +
-           kernel_sobel_x[0][2] * local_data[static_cast<std::size_t>(i - width + 1)] +
+  int gx = (kKernelSobelX[0][0] * local_data[static_cast<std::size_t>(i - width - 1)]) +
+           (kKernelSobelX[0][1] * local_data[static_cast<std::size_t>(i - width)]) +
+           (kKernelSobelX[0][2] * local_data[static_cast<std::size_t>(i - width + 1)]) +
 
-           kernel_sobel_x[1][0] * local_data[static_cast<std::size_t>(i - 1)] +
-           kernel_sobel_x[1][1] * local_data[static_cast<std::size_t>(i)] +
-           kernel_sobel_x[1][2] * local_data[static_cast<std::size_t>(i + 1)] +
+           (kKernelSobelX[1][0] * local_data[static_cast<std::size_t>(i - 1)]) +
+           (kKernelSobelX[1][1] * local_data[static_cast<std::size_t>(i)]) +
+           (kKernelSobelX[1][2] * local_data[static_cast<std::size_t>(i + 1)]) +
 
-           kernel_sobel_x[2][0] * local_data[static_cast<std::size_t>(i + width - 1)] +
-           kernel_sobel_x[2][1] * local_data[static_cast<std::size_t>(i + width)] +
-           kernel_sobel_x[2][2] * local_data[static_cast<std::size_t>(i + width + 1)];
+           (kKernelSobelX[2][0] * local_data[static_cast<std::size_t>(i + width - 1)]) +
+           (kKernelSobelX[2][1] * local_data[static_cast<std::size_t>(i + width)]) +
+           (kKernelSobelX[2][2] * local_data[static_cast<std::size_t>(i + width + 1)]);
 
-  int gy = kernel_sobel_y[0][0] * local_data[static_cast<std::size_t>(i - width - 1)] +
-           kernel_sobel_y[0][1] * local_data[static_cast<std::size_t>(i - width)] +
-           kernel_sobel_y[0][2] * local_data[static_cast<std::size_t>(i - width + 1)] +
+  int gy = (kKernelSobelY[0][0] * local_data[static_cast<std::size_t>(i - width - 1)]) +
+           (kKernelSobelY[0][1] * local_data[static_cast<std::size_t>(i - width)]) +
+           (kKernelSobelY[0][2] * local_data[static_cast<std::size_t>(i - width + 1)]) +
 
-           kernel_sobel_y[1][0] * local_data[static_cast<std::size_t>(i - 1)] +
-           kernel_sobel_y[1][1] * local_data[static_cast<std::size_t>(i)] +
-           kernel_sobel_y[1][2] * local_data[static_cast<std::size_t>(i + 1)] +
+           (kKernelSobelY[1][0] * local_data[static_cast<std::size_t>(i - 1)]) +
+           (kKernelSobelY[1][1] * local_data[static_cast<std::size_t>(i)]) +
+           (kKernelSobelY[1][2] * local_data[static_cast<std::size_t>(i + 1)]) +
 
-           kernel_sobel_y[2][0] * local_data[static_cast<std::size_t>(i + width - 1)] +
-           kernel_sobel_y[2][1] * local_data[static_cast<std::size_t>(i + width)] +
-           kernel_sobel_y[2][2] * local_data[static_cast<std::size_t>(i + width + 1)];
+           (kKernelSobelY[2][0] * local_data[static_cast<std::size_t>(i + width - 1)]) +
+           (kKernelSobelY[2][1] * local_data[static_cast<std::size_t>(i + width)]) +
+           (kKernelSobelY[2][2] * local_data[static_cast<std::size_t>(i + width + 1)]);
 
-  double magnitude = std::sqrt(static_cast<double>(gx * gx + gy * gy));
+  double magnitude = std::sqrt(static_cast<double>((gx * gx) + (gy * gy)));
   magnitude = std::min(255.0, std::max(0.0, magnitude));
-
   return static_cast<int>(std::round(magnitude));
 }
 
@@ -57,8 +56,8 @@ std::vector<int> ApplySobelOperatorLocal(const std::vector<int> &local_data, int
 
   for (int j = 1; j < local_height - 1; ++j) {
     for (int i = 1; i < width - 1; ++i) {
-      int input_idx = j * width + i;
-      int output_idx = (j - 1) * width + i;
+      int input_idx = (j * width) + i;
+      int output_idx = ((j - 1) * width) + i;
 
       int sobel_value = ConvSobel(local_data, input_idx, width);
       result[static_cast<std::size_t>(output_idx)] = sobel_value;
@@ -126,7 +125,7 @@ bool ChetverikovaESobelMPI::RunImpl() {
   int rem = (height - 2) % world_size;
 
   for (int i = 0; i < world_size; ++i) {
-    std::size_t idx = static_cast<std::size_t>(i);
+    auto idx = static_cast<std::size_t>(i);
     lines_on_proc[idx] = lines_on_process;
     if (i < rem) {
       lines_on_proc[idx]++;
@@ -139,7 +138,7 @@ bool ChetverikovaESobelMPI::RunImpl() {
     temp_final += final_counts[idx];
   }
 
-  std::size_t local_data_size = static_cast<std::size_t>(counts[static_cast<std::size_t>(rank)]);
+  auto local_data_size = static_cast<std::size_t>(counts[static_cast<std::size_t>(rank)]);
   std::vector<int> local_data(local_data_size, 0);
 
   std::size_t res_size = static_cast<std::size_t>(width) * static_cast<std::size_t>(height);

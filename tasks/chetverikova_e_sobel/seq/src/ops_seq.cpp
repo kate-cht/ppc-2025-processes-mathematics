@@ -1,6 +1,7 @@
 #include "chetverikova_e_sobel/seq/include/ops_seq.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <cstring>
@@ -9,33 +10,33 @@
 namespace chetverikova_e_sobel {
 
 namespace {
-constexpr std::array<std::array<int, 3>, 3> kernel_sobel_x = {{{{-1, 0, 1}}, {{-2, 0, 2}}, {{-1, 0, 1}}}};
-constexpr std::array<std::array<int, 3>, 3> kernel_sobel_y = {{{{-1, -2, -1}}, {{0, 0, 0}}, {{1, 2, 1}}}};
+constexpr std::array<std::array<int, 3>, 3> kKernelSobelX = {{{{-1, 0, 1}}, {{-2, 0, 2}}, {{-1, 0, 1}}}};
+constexpr std::array<std::array<int, 3>, 3> kKernelSobelY = {{{{-1, -2, -1}}, {{0, 0, 0}}, {{1, 2, 1}}}};
 
 int ConvSobel(const std::vector<int> &data, std::size_t idx, int width) {
-  int gx = kernel_sobel_x[0][0] * data[idx - static_cast<std::size_t>(width) - 1] +
-           kernel_sobel_x[0][1] * data[idx - static_cast<std::size_t>(width)] +
-           kernel_sobel_x[0][2] * data[idx - static_cast<std::size_t>(width) + 1] +
+  int gx = (kKernelSobelX[0][0] * data[idx - static_cast<std::size_t>(width) - 1]) +
+           (kKernelSobelX[0][1] * data[idx - static_cast<std::size_t>(width)]) +
+           (kKernelSobelX[0][2] * data[idx - static_cast<std::size_t>(width) + 1]) +
 
-           kernel_sobel_x[1][0] * data[idx - 1] + kernel_sobel_x[1][1] * data[idx] +
-           kernel_sobel_x[1][2] * data[idx + 1] +
+           (kKernelSobelX[1][0] * data[idx - 1]) + (kKernelSobelX[1][1] * data[idx]) +
+           (kKernelSobelX[1][2] * data[idx + 1]) +
 
-           kernel_sobel_x[2][0] * data[idx + static_cast<std::size_t>(width) - 1] +
-           kernel_sobel_x[2][1] * data[idx + static_cast<std::size_t>(width)] +
-           kernel_sobel_x[2][2] * data[idx + static_cast<std::size_t>(width) + 1];
+           (kKernelSobelX[2][0] * data[idx + static_cast<std::size_t>(width) - 1]) +
+           (kKernelSobelX[2][1] * data[idx + static_cast<std::size_t>(width)]) +
+           (kKernelSobelX[2][2] * data[idx + static_cast<std::size_t>(width) + 1]);
 
-  int gy = kernel_sobel_y[0][0] * data[idx - static_cast<std::size_t>(width) - 1] +
-           kernel_sobel_y[0][1] * data[idx - static_cast<std::size_t>(width)] +
-           kernel_sobel_y[0][2] * data[idx - static_cast<std::size_t>(width) + 1] +
+  int gy = (kKernelSobelY[0][0] * data[idx - static_cast<std::size_t>(width) - 1]) +
+           (kKernelSobelY[0][1] * data[idx - static_cast<std::size_t>(width)]) +
+           (kKernelSobelY[0][2] * data[idx - static_cast<std::size_t>(width) + 1]) +
 
-           kernel_sobel_y[1][0] * data[idx - 1] + kernel_sobel_y[1][1] * data[idx] +
-           kernel_sobel_y[1][2] * data[idx + 1] +
+           (kKernelSobelY[1][0] * data[idx - 1]) + (kKernelSobelY[1][1] * data[idx]) +
+           (kKernelSobelY[1][2] * data[idx + 1]) +
 
-           kernel_sobel_y[2][0] * data[idx + static_cast<std::size_t>(width) - 1] +
-           kernel_sobel_y[2][1] * data[idx + static_cast<std::size_t>(width)] +
-           kernel_sobel_y[2][2] * data[idx + static_cast<std::size_t>(width) + 1];
+           (kKernelSobelY[2][0] * data[idx + static_cast<std::size_t>(width) - 1]) +
+           (kKernelSobelY[2][1] * data[idx + static_cast<std::size_t>(width)]) +
+           (kKernelSobelY[2][2] * data[idx + static_cast<std::size_t>(width) + 1]);
 
-  double magnitude = std::sqrt(static_cast<double>(gx * gx + gy * gy));
+  double magnitude = std::sqrt(static_cast<double>((gx * gx) + (gy * gy)));
   magnitude = std::min(255.0, std::max(0.0, magnitude));
 
   return static_cast<int>(std::round(magnitude));
@@ -49,9 +50,10 @@ std::vector<int> ApplySobelOperator(const std::vector<int> &image, int width, in
     return result;
   }
 
-  for (int y = 1; y < height - 1; ++y) {
-    for (int x = 1; x < width - 1; ++x) {
-      std::size_t idx = static_cast<std::size_t>(y) * static_cast<std::size_t>(width) + static_cast<std::size_t>(x);
+  for (int row_index = 1; row_index < height - 1; ++row_index) {
+    for (int col_index = 1; col_index < width - 1; ++col_index) {
+      std::size_t idx =
+          (static_cast<std::size_t>(row_index) * static_cast<std::size_t>(width)) + static_cast<std::size_t>(col_index);
       result[idx] = ConvSobel(image, idx, width);
     }
   }
@@ -75,11 +77,7 @@ bool ChetverikovaESobelSEQ::ValidationImpl() {
 
   std::size_t expected_size = static_cast<std::size_t>(input.width) * static_cast<std::size_t>(input.height) *
                               static_cast<std::size_t>(input.channels);
-
-  if (input.pixels.size() != expected_size) {
-    return false;
-  }
-
+  return input.pixels.size() == expected_size;
   return true;
 }
 

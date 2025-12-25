@@ -17,7 +17,6 @@ namespace chetverikova_e_sobel {
 
 class ChetverikovaERunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
   InType input_data_;
-  OutType expected_data_{};
 
   void SetUp() override {
     std::string abs_path = ppc::util::GetAbsoluteTaskPath(PPC_ID_chetverikova_e_sobel, "perf.bin");
@@ -104,8 +103,8 @@ TEST_P(ChetverikovaERunPerfTestProcesses, RunPerfModes) {
   ExecuteTest(GetParam());
 }
 
-const auto kAllPerfTasks =
-    ppc::util::MakeAllPerfTasks<InType, ChetverikovaESobelMPI>(PPC_SETTINGS_chetverikova_e_sobel);
+const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, ChetverikovaESobelMPI, ChetverikovaESobelSEQ>(
+    PPC_SETTINGS_chetverikova_e_sobel);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
