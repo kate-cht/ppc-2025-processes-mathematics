@@ -102,8 +102,10 @@ bool ChetverikovaESobelSEQ::RunImpl() {
     int channels = input.channels;
 
     if (channels >= 3) {
-      for (std::size_t row_idx = 0; row_idx < static_cast<std::size_t>(input.height); ++row_idx) {
-        for (std::size_t col_idx = 0; col_idx < static_cast<std::size_t>(input.width); ++col_idx) {
+      std::size_t height = static_cast<std::size_t>(input.height);
+      std::size_t width = static_cast<std::size_t>(input.width);
+      for (std::size_t row_idx = 0; row_idx < height; ++row_idx) {
+        for (std::size_t col_idx = 0; col_idx < width; ++col_idx) {
           std::size_t src_idx =
               (row_idx * static_cast<std::size_t>(input.width) + col_idx) * static_cast<std::size_t>(channels);
           std::size_t dst_idx = (row_idx * static_cast<std::size_t>(input.width)) + col_idx;
