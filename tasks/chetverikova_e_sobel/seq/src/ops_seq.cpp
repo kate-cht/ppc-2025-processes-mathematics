@@ -77,7 +77,9 @@ bool ChetverikovaESobelSEQ::ValidationImpl() {
 
   std::size_t expected_size = static_cast<std::size_t>(input.width) * static_cast<std::size_t>(input.height) *
                               static_cast<std::size_t>(input.channels);
-  return input.pixels.size() == expected_size;
+  if (input.pixels.size() != expected_size) {
+    return false;
+  }
   return true;
 }
 
