@@ -49,21 +49,27 @@ class ChetverikovaERunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InT
     input_data_.height = height;
     input_data_.channels = channels;
 
-    int total_pixels = width * height * channels;
+    // Используем size_t для вычисления размера
+    std::size_t total_pixels =
+        static_cast<std::size_t>(width) * static_cast<std::size_t>(height) * static_cast<std::size_t>(channels);
     input_data_.pixels.resize(total_pixels);
 
     file.seekg(0, std::ios::end);
     std::streamsize file_size = file.tellg();
-    std::streamsize expected_size = sizeof(width) + sizeof(height) + sizeof(channels) + total_pixels * sizeof(int);
+
+    // Приводим типы к streamsize
+    std::streamsize expected_size = static_cast<std::streamsize>(sizeof(width) + sizeof(height) + sizeof(channels)) +
+                                    static_cast<std::streamsize>(total_pixels * sizeof(int));
 
     if (file_size < expected_size) {
       throw std::runtime_error("File too small. Expected: " + std::to_string(expected_size) +
                                ", got: " + std::to_string(file_size));
     }
 
-    file.seekg(sizeof(width) + sizeof(height) + sizeof(channels), std::ios::beg);
+    file.seekg(static_cast<std::streamoff>(sizeof(width) + sizeof(height) + sizeof(channels)), std::ios::beg);
 
-    if (!file.read(reinterpret_cast<char *>(input_data_.pixels.data()), total_pixels * sizeof(int))) {
+    if (!file.read(reinterpret_cast<char *>(input_data_.pixels.data()),
+                   static_cast<std::streamsize>(total_pixels * sizeof(int)))) {
       throw std::runtime_error("Failed to read pixel data");
     }
 
@@ -71,16 +77,21 @@ class ChetverikovaERunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InT
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    if (output_data.size() != static_cast<size_t>(input_data_.width * input_data_.height)) {
+    std::size_t expected_output_size =
+        static_cast<std::size_t>(input_data_.width) * static_cast<std::size_t>(input_data_.height);
+
+    if (output_data.size() != expected_output_size) {
       return false;
     }
 
-    for (size_t i = 0; i < output_data.size(); ++i) {
-      size_t row = i / input_data_.width;
-      size_t col = i % input_data_.width;
+    const std::size_t width = static_cast<std::size_t>(input_data_.width);
+    const std::size_t height = static_cast<std::size_t>(input_data_.height);
 
-      if ((row == 0 || row == input_data_.height - 1 || col == 0 || col == input_data_.width - 1) &&
-          output_data[i] != 0) {
+    for (std::size_t i = 0; i < output_data.size(); ++i) {
+      std::size_t row = i / width;
+      std::size_t col = i % width;
+
+      if ((row == 0 || row == height - 1 || col == 0 || col == width - 1) && output_data[i] != 0) {
         return false;
       }
     }

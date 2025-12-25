@@ -62,8 +62,9 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
 
     file.close();
 
-    // Size validation
-    size_t expected_size = input_data_.width * input_data_.height * input_data_.channels;
+    std::size_t expected_size = static_cast<std::size_t>(input_data_.width) *
+                                static_cast<std::size_t>(input_data_.height) *
+                                static_cast<std::size_t>(input_data_.channels);
     if (input_data_.pixels.size() != expected_size) {
       throw std::runtime_error("Pixel count mismatch. Expected: " + std::to_string(expected_size) +
                                ", got: " + std::to_string(input_data_.pixels.size()));
@@ -73,22 +74,34 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
   bool CheckTestOutputData(OutType &output_data) final {
     TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
 
-    if (output_data.size() != static_cast<size_t>(input_data_.width * input_data_.height)) {
+    std::size_t expected_output_size =
+        static_cast<std::size_t>(input_data_.width) * static_cast<std::size_t>(input_data_.height);
+
+    if (output_data.size() != expected_output_size) {
       return false;
     }
 
     if (input_data_.width < 3 || input_data_.height < 3) {
-      if (output_data != input_data_.pixels) {
+      if (output_data.size() != input_data_.pixels.size()) {
         return false;
+      }
+      for (std::size_t i = 0; i < output_data.size(); ++i) {
+        if (output_data[i] != input_data_.pixels[i]) {
+          return false;
+        }
       }
       return true;
     }
 
-    for (size_t i = 0; i < output_data.size(); ++i) {
-      size_t row = i / input_data_.width;
-      size_t col = i % input_data_.width;
+    const std::size_t width = static_cast<std::size_t>(input_data_.width);
+    const std::size_t height = static_cast<std::size_t>(input_data_.height);
 
-      if (row == 0 || row == input_data_.height - 1 || col == 0 || col == input_data_.width - 1) {
+    for (std::size_t i = 0; i < output_data.size(); ++i) {
+      const std::size_t row = i / width;
+      const std::size_t col = i % width;
+
+      // Граничные пиксели должны быть 0
+      if (row == 0 || row == height - 1 || col == 0 || col == width - 1) {
         if (output_data[i] != 0) {
           return false;
         }
@@ -99,7 +112,8 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
 
     for (int row = 1; row < input_data_.height - 1; ++row) {
       for (int col = 1; col < input_data_.width - 1; ++col) {
-        int idx = row * input_data_.width + col;
+        std::size_t idx =
+            static_cast<std::size_t>(row) * static_cast<std::size_t>(input_data_.width) + static_cast<std::size_t>(col);
         if (output_data[idx] != 0) {
           has_non_zero = true;
         }
@@ -111,9 +125,9 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
     }
 
     if (params == "test1" && input_data_.width == 4 && input_data_.height == 4) {
-      std::vector<int> expected_indices = {5, 6, 9, 10};
+      const std::array<std::size_t, 4> expected_indices = {5, 6, 9, 10};
 
-      for (int idx : expected_indices) {
+      for (std::size_t idx : expected_indices) {
         if (output_data[idx] != 33) {
           return false;
         }
