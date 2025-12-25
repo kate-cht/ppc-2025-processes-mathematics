@@ -25,8 +25,6 @@ class ChetverikovaERunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InT
     if (!file.is_open()) {
       throw std::runtime_error("Failed to open file: " + abs_path);
     }
-
-    // Чтение размеров
     int width = 0;
     int height = 0;
     int channels = 0;
@@ -49,7 +47,6 @@ class ChetverikovaERunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InT
     input_data_.height = height;
     input_data_.channels = channels;
 
-    // Используем size_t для вычисления размера
     std::size_t total_pixels =
         static_cast<std::size_t>(width) * static_cast<std::size_t>(height) * static_cast<std::size_t>(channels);
     input_data_.pixels.resize(total_pixels);
@@ -57,7 +54,6 @@ class ChetverikovaERunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InT
     file.seekg(0, std::ios::end);
     std::streamsize file_size = file.tellg();
 
-    // Приводим типы к streamsize
     std::streamsize expected_size = static_cast<std::streamsize>(sizeof(width) + sizeof(height) + sizeof(channels)) +
                                     static_cast<std::streamsize>(total_pixels * sizeof(int));
 

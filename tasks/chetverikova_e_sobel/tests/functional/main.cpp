@@ -41,7 +41,6 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
 
     TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
 
-    // Only root process reads the file
     std::string filename = params + ".txt";
     std::string abs_path = ppc::util::GetAbsoluteTaskPath(PPC_ID_chetverikova_e_sobel, filename);
 
@@ -100,7 +99,6 @@ class ChetverikovaERunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<In
       const std::size_t row = i / width;
       const std::size_t col = i % width;
 
-      // Граничные пиксели должны быть 0
       if (row == 0 || row == height - 1 || col == 0 || col == width - 1) {
         if (output_data[i] != 0) {
           return false;
